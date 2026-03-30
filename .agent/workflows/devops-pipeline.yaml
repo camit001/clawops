@@ -1,0 +1,65 @@
+# .agent/workflows/devops-pipeline.yaml
+# Lobster workflow — ClawOps production deployment pipeline
+# This is called by OpenClaw when the full deploy+monitor cycle is triggered.
+
+name: production-deploy-and-monitor
+description: Deploy a service to production, verify it, and start NemoClaw log watch
+
+triggers:
+  - phrase: "production deploy"
+  - phrase: "deploy to prod"
+
+steps:
+  - id: pre-check
+    description: Verify current service state before deploying
+    tool: clawops-devops
+    action: history
+    params:
+      service: "{{ service }}"
+
+  - id: deploy
+    description: Deploy service to production
+    tool: clawops-devops
+    action: deploy
+    params:
+      service: "{{ service }}"
+      env: production
+    on_failure:
+      - action: notify
+        message: "❌ Deploy failed for {{ service }}. Triggering rollback."
+      - goto: rollback
+
+  - id: start-watch
+    description: Start NemoClaw file-system watcher for log monitoring
+    tool: clawops-devops
+    action: logwatch
+    params:
+      service: "{{ service }}"
+      alertThreshold: 3      # tighter threshold for production
+
+  - id: verify
+    description: Check logs for errors in the first 60 seconds post-deploy
+    tool: clawops-devops
+    action: logs
+    params:
+      service: "{{ service }}"
+      level: ERROR
+      limit: 10
+    wait_seconds: 60
+
+  - id: rollback
+    description: Auto-rollback if errors detected
+    tool: clawops-devops
+    action: rollback
+    params:
+      service: "{{ service }}"
+    condition: "{{ steps.verify.result.entries.length > 0 }}"
+
+  - id: notify
+    description: Send deployment summary
+    action: message
+    content: |
+      ✅ *{{ service }}* deployed to production successfully.
+      Version: {{ steps.deploy.result.version }}
+      Errors in first 60s: {{ steps.verify.result.entries.length }}
+      NemoClaw is watching logs — you'll be alerted on any error spikes.
