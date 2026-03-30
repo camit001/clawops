@@ -1,0 +1,15 @@
+{
+  "name": "clawops-devops",
+  "version": "1.0.0",
+  "description": "ClawOps – AI-powered DevOps assistant skill for OpenClaw + NemoClaw",
+  "main": "index.js",
+  "license": "MIT",
+  "keywords": ["openclaw", "devops", "deployment", "logs", "automation"],
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chokidar": "^3.6.0",
+    "js-yaml": "^4.1.0",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.0"
+  }
+}
