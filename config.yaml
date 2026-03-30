@@ -1,0 +1,43 @@
+# ClawOps — OpenClaw Skill Configuration
+# Place this in your OpenClaw workspace config or merge into your existing config.yaml
+
+skill:
+  name: clawops-devops
+  version: 1.0.0
+  description: AI-powered DevOps assistant using Open Claw + Nemo Claw
+  entry: skills/clawops-devops/index.js
+  license: MIT
+
+# Channels where this skill is active
+channels:
+  - slack
+  - telegram
+  - webchat
+
+# NemoClaw sandbox settings
+nemoclaw:
+  enabled: true
+  sandbox: true                    # run inside NVIDIA OpenShell for safety
+  model: nvidia/nemotron-mini-4b   # local inference via NemoClaw managed stack
+  watch_dirs:
+    - logs-demo/                   # NemoClaw monitors this directory for changes
+
+# Services ClawOps knows about (extend as needed)
+services:
+  auth-service:
+    default_env: staging
+    repo: github.com/your-org/auth-service
+  payment-service:
+    default_env: production
+    repo: github.com/your-org/payment-service
+  api-gateway:
+    default_env: staging
+    repo: github.com/your-org/api-gateway
+  order-service:
+    default_env: staging
+    repo: github.com/your-org/order-service
+
+# Alert thresholds
+alerts:
+  error_threshold: 5        # errors per watch window before alerting
+  notify_channel: slack     # where to send alerts
